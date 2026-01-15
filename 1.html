@@ -1,1 +1,499 @@
-1
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>六年级数学计算专项-六大方程模型版</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --paper-width: 210mm;
+            --paper-height: 297mm;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            font-family: "KaiTi", "楷体", serif;
+            background-color: #525659;
+            display: flex; height: 100vh; overflow: hidden;
+        }
+
+        /* 左侧控制栏 */
+        .sidebar {
+            width: 280px; background: #fff; padding: 20px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column; gap: 10px;
+            overflow-y: auto; z-index: 10;
+        }
+        .sidebar h2 { font-size: 18px; color: #333; border-bottom: 2px solid var(--primary-color); padding-bottom: 5px; margin: 0; }
+        .btn {
+            width: 100%; padding: 10px; border: none; border-radius: 4px;
+            cursor: pointer; font-size: 14px; font-weight: bold; margin-bottom: 5px;
+            color: white; font-family: "Microsoft YaHei", sans-serif;
+        }
+        .btn-primary { background: var(--primary-color); }
+        .btn-warning { background: #f1c40f; color: #333; }
+        .btn-success { background: #2ecc71; }
+
+        /* 右侧预览区 */
+        .preview-area {
+            flex: 1; padding: 20px; overflow: auto;
+            display: flex; justify-content: center;
+        }
+
+        /* A4 纸张 */
+        .paper {
+            width: var(--paper-width); height: var(--paper-height);
+            background: white; padding: 15mm;
+            box-sizing: border-box; position: relative;
+        }
+
+        .paper-header { text-align: center; margin-bottom: 10px; }
+        .paper-title { font-size: 24px; font-weight: 900; margin-bottom: 15px; font-family: "SimHei", sans-serif; }
+        .student-info {
+            display: flex; justify-content: space-between; font-size: 16px;
+            border-bottom: 2px solid #000; padding-bottom: 5px; font-family: "SimSun", serif;
+        }
+        .section-title {
+            font-size: 16px; font-weight: bold; margin: 10px 0;
+            background-color: #eee; padding: 4px 8px; border-left: 5px solid #333;
+            font-family: "SimHei", sans-serif;
+        }
+
+        /* 布局网格 */
+        .grid-2-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; row-gap: 15px; }
+        .grid-3-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; row-gap: 20px; }
+        .grid-units { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; row-gap: 15px; }
+        /* 修改解方程为2列布局，因为题目变长了 */
+        .grid-equations { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; row-gap: 25px; }
+
+        /* 题目容器 */
+        .question-item {
+            display: flex;
+            align-items: flex-start;
+            font-size: 16px;
+            padding: 5px 0;
+        }
+        .question-item.tall { min-height: 60px; }
+
+        .q-index {
+            width: 35px; margin-top: 4px; 
+            font-weight: bold; flex-shrink: 0;
+            font-family: "Times New Roman", serif;
+        }
+
+        .q-content {
+            flex: 1;
+            line-height: 2;
+        }
+
+        /* 分数与符号样式 */
+        .fraction {
+            display: inline-block;
+            vertical-align: middle;
+            text-align: center;
+            margin: 0 3px;
+            font-family: "Times New Roman", serif;
+        }
+        .fraction > span {
+            display: block; padding: 0 3px; line-height: 1;
+        }
+        .fraction .top { border-bottom: 1px solid #000; }
+        .fraction .bottom { padding-top: 1px; }
+
+        .operator {
+            margin: 0 4px; vertical-align: middle; font-family: "Times New Roman", serif;
+        }
+
+        /* 答案显隐控制 */
+        .answer-key { color: red; font-weight: bold; display: none; margin-left: 10px; }
+        .show-answer .answer-key { display: inline; }
+
+        @media print {
+            .sidebar { display: none; }
+            .preview-area { padding: 0; background: white; display: block; }
+            .paper { width: 100%; height: auto; box-shadow: none; padding: 0 10mm; }
+            body { height: auto; overflow: visible; background: white; }
+            @page { size: A4; margin: 10mm; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>出题设置</h2>
+    <div style="margin-bottom:15px">
+        <label><input type="checkbox" id="chk-mul" checked> 分数乘法</label><br>
+        <label><input type="checkbox" id="chk-div" checked> 分数除法</label><br>
+        <label><input type="checkbox" id="chk-per" checked> 百分数</label>
+    </div>
+    <div style="margin-bottom:15px">
+        <label><input type="radio" name="difficulty" value="basic" checked> 基础模式</label><br>
+        <label><input type="radio" name="difficulty" value="advanced"> 提高模式</label>
+    </div>
+    <button class="btn btn-primary" onclick="generatePaper()">🔄 刷新题目</button>
+    <button class="btn btn-warning" onclick="toggleAnswers()">👁️ 显示答案</button>
+    <button class="btn btn-success" onclick="window.print()">📄 打印 / 下载PDF</button>
+</div>
+
+<div class="preview-area">
+    <div class="paper" id="paper-content">
+        <div class="paper-header">
+            <div class="paper-title">六年级上册数学计算专项练习</div>
+            <div class="student-info">
+                <span>班级：__________</span>
+                <span>姓名：__________</span>
+                <span>学号：__________</span>
+                <span>得分：__________</span>
+            </div>
+        </div>
+
+        <div class="section-title">一、直接写出得数 (每题1分，共8分)</div>
+        <div class="grid-2-4" id="section-1"></div>
+
+        <div class="section-title">二、脱式计算，能简算的要简算 (每题4分，共24分)</div>
+        <div class="grid-3-2" id="section-2"></div>
+
+        <div class="section-title">三、单位换算 (每题2分，共10分)</div>
+        <div class="grid-units" id="section-3"></div>
+
+        <div class="section-title">四、解方程 (每题4分，共24分)</div>
+        <div class="grid-equations" id="section-4"></div>
+    </div>
+</div>
+
+<script>
+    // --- 数学工具 ---
+    function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+    function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+    class Fraction {
+        constructor(n, d) {
+            if (d < 0) { n = -n; d = -d; }
+            let common = gcd(Math.abs(n), Math.abs(d));
+            this.n = n / common;
+            this.d = d / common;
+        }
+        add(f) { return new Fraction(this.n * f.d + f.n * this.d, this.d * f.d); }
+        sub(f) { return new Fraction(this.n * f.d - f.n * this.d, this.d * f.d); }
+        mul(f) { return new Fraction(this.n * f.n, this.d * f.d); }
+        div(f) { return new Fraction(this.n * f.d, this.d * f.n); }
+        isInteger() { return this.d === 1; }
+        toHTML() {
+            if (this.d === 1) return `<span>${this.n}</span>`;
+            return `<div class="fraction"><span class="top">${this.n}</span><span class="bottom">${this.d}</span></div>`;
+        }
+        getValue() { return this.n / this.d; }
+    }
+
+    function op(symbol) { return `<span class="operator">${symbol}</span>`; }
+    function createItem(index, contentHtml, answer, isTall = false, showEquals = false) {
+        let suffix = showEquals ? op('=') : ''; 
+        let answerPrefix = '';
+        if (!showEquals && isTall) answerPrefix = '= '; 
+        return `<div class="question-item ${isTall ? 'tall' : ''}">
+                    <div class="q-index">(${index})</div>
+                    <div class="q-content">
+                        ${contentHtml} ${suffix} <span class="answer-key">${answerPrefix}${answer}</span>
+                    </div>
+                </div>`;
+    }
+
+    function getStrictFraction() {
+        let f, attempt = 0;
+        do {
+            f = new Fraction(randInt(1, 9), randInt(2, 9));
+            attempt++;
+        } while (f.isInteger() && attempt < 50);
+        return f;
+    }
+
+    const commonFracs = [
+        {v:0.5, f:new Fraction(1,2), p:"50%"}, {v:0.25, f:new Fraction(1,4), p:"25%"},
+        {v:0.75, f:new Fraction(3,4), p:"75%"}, {v:0.2, f:new Fraction(1,5), p:"20%"},
+        {v:0.4, f:new Fraction(2,5), p:"40%"}, {v:0.6, f:new Fraction(3,5), p:"60%"},
+        {v:0.8, f:new Fraction(4,5), p:"80%"}, {v:0.125, f:new Fraction(1,8), p:"12.5%"},
+        {v:0.375, f:new Fraction(3,8), p:"37.5%"}, {v:0.625, f:new Fraction(5,8), p:"62.5%"},
+        {v:0.875, f:new Fraction(7,8), p:"87.5%"}
+    ];
+
+    // --- 1. 口算 ---
+    function genSec1(settings) {
+        let html = '';
+        for(let i=1; i<=8; i++) {
+            let type = randInt(1, 3);
+            if (!settings.per && type === 3) type = 1;
+            let f1, f2, q, a, safeGuard = 0;
+            do {
+                f1 = getStrictFraction(); f2 = getStrictFraction(); safeGuard++;
+            } while (safeGuard < 20 && (f1.isInteger() || f2.isInteger()));
+
+            if (type === 1) { 
+                let symbol = Math.random()>0.5 ? '+' : '-';
+                if(symbol==='-' && f1.getValue()<f2.getValue()) [f1,f2]=[f2,f1];
+                q = `${f1.toHTML()} ${op(symbol)} ${f2.toHTML()}`;
+                a = symbol==='+' ? f1.add(f2).toHTML() : f1.sub(f2).toHTML();
+            } else if (type === 2) { 
+                let symbol = (Math.random()>0.5 && settings.div) ? '÷' : '×';
+                q = `${f1.toHTML()} ${op(symbol)} ${f2.toHTML()}`;
+                a = symbol==='×' ? f1.mul(f2).toHTML() : f1.div(f2).toHTML();
+            } else { 
+                let cf = commonFracs[randInt(0, commonFracs.length-1)];
+                let n = randInt(2, 10);
+                q = `${n} ${op('×')} ${cf.p}`;
+                a = parseFloat((n * cf.v).toFixed(3));
+            }
+            html += createItem(i, q, a, false, true);
+        }
+        document.getElementById('section-1').innerHTML = html;
+    }
+
+    // --- 2. 简便计算 ---
+    function genSec2(settings) {
+        let html = '';
+        let isAdv = settings.diff === 'advanced';
+        const tasks = [
+            ()=>{ // 连乘
+                let f1, f2, f3, attempt=0;
+                do {
+                    f1 = getStrictFraction(); f2 = getStrictFraction();
+                    f3 = new Fraction(f2.d, f1.n); attempt++;
+                } while ((f3.isInteger() || f3.getValue()===1) && attempt < 20);
+                if(f3.isInteger()) f3 = getStrictFraction();
+                return { q: `${f1.toHTML()} ${op('×')} ${f2.toHTML()} ${op('×')} ${f3.toHTML()}`, a: f1.mul(f2).mul(f3).toHTML() };
+            },
+            ()=>{ // 分配律
+                let c = getStrictFraction();
+                let base = randInt(5, 20), n1 = randInt(1, base-1), n2 = base - n1;
+                let p1 = new Fraction(n1, base), p2 = new Fraction(n2, base);
+                let q = `${p1.toHTML()} ${op('×')} ${c.toHTML()} ${op('+')} ${p2.toHTML()} ${op('×')} ${c.toHTML()}`;
+                if(isAdv) { q += ` ${op('-')} ${c.toHTML()}`; return {q:q, a:0}; }
+                return {q:q, a:c.toHTML()};
+            },
+            ()=>{ // 括号
+                let d=randInt(6,12), m=d*randInt(1,3);
+                let f1 = new Fraction(randInt(1,Math.floor(d/2)), d);
+                let f2 = new Fraction(randInt(1,Math.floor(d/2)), d);
+                let q = `(${f1.toHTML()} ${op('+')} ${f2.toHTML()}) ${op('×')} ${m}`;
+                return {q:q, a: parseFloat(((f1.getValue()+f2.getValue())*m).toFixed(2))};
+            },
+            ()=>{ // 提公因数
+                let f = getStrictFraction(), sum = f.d * randInt(1, 5);
+                let a = randInt(2, sum-1), b = sum - a;
+                let q = `${a} ${op('×')} ${f.toHTML()} ${op('+')} ${b} ${op('×')} ${f.toHTML()}`;
+                return {q:q, a: sum * f.getValue()};
+            },
+            ()=>{ // 互化
+                let cf = commonFracs[randInt(0, commonFracs.length-1)];
+                let q = `${cf.f.toHTML()} ${op('×')} 3.5 ${op('+')} ${settings.per?cf.p:cf.v} ${op('×')} 6.5`;
+                return {q:q, a: cf.v * 10};
+            },
+            ()=>{ // 典型分配律
+                let c = getStrictFraction(), den = randInt(5,15), n1 = randInt(1,den-1);
+                let f1 = new Fraction(n1,den), f2 = new Fraction(den-n1,den);
+                let q = `${c.toHTML()} ${op('×')} ${f1.toHTML()} ${op('+')} ${f2.toHTML()} ${op('×')} ${c.toHTML()}`;
+                return {q:q, a: c.toHTML()};
+            }
+        ];
+        tasks.forEach((t,i) => { let r=t(); html += createItem(i+1, r.q, r.a, true, false); });
+        document.getElementById('section-2').innerHTML = html;
+    }
+
+    // --- 3. 单位换算 ---
+    const unitDB = {
+        len: { name:"长度", u:[{n:"千米",v:1e6},{n:"米",v:1000},{n:"分米",v:100},{n:"厘米",v:10},{n:"毫米",v:1}] },
+        wt: { name:"重量", u:[{n:"吨",v:1e6},{n:"千克",v:1000},{n:"克",v:1}] },
+        area: { name:"面积", u:[{n:"公顷",v:1e8},{n:"平方米",v:10000},{n:"平方分米",v:100},{n:"平方厘米",v:1}] },
+        vol: { name:"体积", u:[{n:"立方米",v:1e6},{n:"立方分米",v:1000},{n:"立方厘米",v:1}] },
+        cap: { name:"容积", u:[{n:"立方米",v:1e6},{n:"升",v:1000},{n:"毫升",v:1}] }
+    };
+    function genSec3() {
+        let html = '';
+        let types = Object.keys(unitDB);
+        for(let i=1; i<=5; i++) {
+            let type = unitDB[types[randInt(0, types.length-1)]];
+            let u1 = type.u[randInt(0, type.u.length-1)];
+            let u2 = type.u[randInt(0, type.u.length-1)];
+            while(u1===u2) u2 = type.u[randInt(0, type.u.length-1)];
+            let rate = u1.v / u2.v;
+            let val, ans;
+            if(rate > 1) { val = randInt(1, 50) / 10; ans = parseFloat((val * rate).toFixed(4)); }
+            else { ans = randInt(1, 50) / 10; val = parseFloat((ans / rate).toFixed(4)); }
+            html += createItem(i, `${val} ${u1.n} = ( &nbsp;&nbsp; ) ${u2.n}`, ans, false, false);
+        }
+        document.getElementById('section-3').innerHTML = html;
+    }
+
+    // --- 4. 解方程 (全新六种模型) ---
+    function genSec4(settings) {
+        let html = '';
+        const types = [
+            // 1. 同类项合并 (x - 40%x = 120)
+            () => {
+                let x = randInt(5, 50) * 10; // 答案
+                let per = randInt(1, 9) * 10; // 10% - 90%
+                let type = Math.random() > 0.5 ? 'sub' : 'add';
+                // 构造方程: (1 +/- per%)x = res
+                let factor = type === 'sub' ? (100 - per)/100 : (100 + per)/100;
+                let res = Math.round(x * factor);
+                let q = type === 'sub' 
+                    ? `x ${op('-')} ${per}%x = ${res}`
+                    : `x ${op('+')} ${per}%x = ${res}`;
+                return {q: q, a: `x=${x}`};
+            },
+            // 2. 解比例 (10:x = 2/3 : 4/5)
+            () => {
+                let x = randInt(2, 20); // 答案
+                // 构造: a : x = b : c  => x = a*c/b
+                // 选取两个简单的分数作为 b 和 c
+                let f1 = getStrictFraction(); // b
+                let f2 = getStrictFraction(); // c
+                // 倒推 a. a = x * b / c
+                // 为了让a看起来正常，我们稍微凑一下
+                // 策略改为：外项积 = 内项积
+                // a * c = x * b. 让 b, c 为简单分数.
+                // 形式： x : 整数 = 分数 : 分数
+                let n = randInt(2, 12); // 整数项
+                let q = `x ${op(':')} ${n} = ${f1.toHTML()} ${op(':')} ${f2.toHTML()}`;
+                // x = n * f1 / f2
+                let val = n * (f1.n * f2.d) / (f1.d * f2.n);
+                // 如果结果不是有限小数或整数，重来
+                // 简单起见，直接给一个凑好的整数比例
+                let k = randInt(2, 8);
+                x = randInt(2, 10) * k;
+                let n2 = randInt(2, 10);
+                let n3 = n2 * k;
+                // x : n2 = n3 : 1  -> x/n2 = n3
+                // 稍微变形: x : 2.4 = 5 : 2
+                let ratio = randInt(2, 5); 
+                let d2 = randInt(1, 9)/10 + randInt(1,5); // 小数
+                let d1 = parseFloat((d2 * ratio).toFixed(1)); 
+                let d3 = randInt(2, 9);
+                let x_ans = parseFloat((d3 * ratio).toFixed(1));
+                q = `x ${op(':')} ${d3} = ${d1} ${op(':')} ${d2}`;
+                return {q: q, a: `x=${x_ans}`};
+            },
+            // 3. 去括号 (3(x+1) = 2x+5)
+            () => {
+                let x = randInt(2, 15);
+                let a = randInt(2, 6); // 括号外系数
+                let b = randInt(1, 10); // 括号内常数
+                // 左边 = a(x+b)
+                let lhs_val = a * (x + b);
+                // 右边构造 cx + d
+                let c = randInt(1, a - 1); // 确保有解且x系数为正
+                let d = lhs_val - c * x;
+                let q = `${a}(x ${op('+')} ${b}) = ${c}x ${op('+')} ${d}`;
+                return {q: q, a: `x=${x}`};
+            },
+            // 4. 去分母 (x/2 - 1 = (x+2)/6 + 2)
+            () => {
+                // 模板: (x+a)/d1 = (x+b)/d2 + k
+                let x = randInt(1, 10) * 6; // 保证公倍数
+                let d1 = 2, d2 = 3; 
+                if(Math.random()>0.5) { d1=3; d2=4; x=12*randInt(1,3); }
+                else if(Math.random()>0.5) { d1=2; d2=5; x=10*randInt(1,3); }
+                
+                let a = 0; // 简化
+                let b = randInt(1, 5);
+                
+                // 计算 k
+                // LHS = x/d1
+                // RHS_part = (x+b)/d2
+                let lhs = x / d1;
+                let rhs_part = (x + b) / d2;
+                let k = lhs - rhs_part;
+                
+                // 凑整 k
+                // 如果 k 不是整数，重新选 b
+                // 这种方式比较笨，我们直接反推: 
+                // x/2 - (x+b)/3 = k
+                // 3x - 2(x+b) = 6k
+                // 3x - 2x - 2b = 6k => x - 2b = 6k
+                // 所以 6k = x - 2b. 
+                // 只要 (x - 2b) 能被 6 整除即可
+                // 令 b=0, x=6, k=1. 6/2 - 6/3 = 3-2=1.
+                
+                // 生成逻辑：
+                let lcm = d1 * d2; // 简化公倍数
+                let k_int = randInt(1, 3);
+                b = randInt(1, 5);
+                // 方程: x/d1 - (x+b)/d2 = k
+                // x*d2 - (x+b)*d1 = k * d1*d2
+                // x(d2-d1) - b*d1 = k*lcm
+                // x = (k*lcm + b*d1) / (d2-d1)
+                
+                // 设 d1=2, d2=3. x = (6k + 2b)
+                x = 6*k_int + 2*b;
+                
+                let q = `<div class="fraction"><span class="top">x</span><span class="bottom">${d1}</span></div> ${op('-')} <div class="fraction"><span class="top">x+${b}</span><span class="bottom">${d2}</span></div> = ${k_int}`;
+                return {q: q, a: `x=${x}`};
+            },
+            // 5. 三数混合 (1/8x + 0.75x = ...)
+            () => {
+                let x = randInt(1, 20); // 答案
+                // 构造: a(分数)x + b(小数)x = c
+                let cf = commonFracs[randInt(0, 3)]; // 1/2, 1/4, 3/4 等简单分数
+                let dec = randInt(1, 9) / 10; // 0.x
+                
+                let sum = cf.f.getValue() + dec; 
+                // 结果 c
+                let c = sum * x;
+                // c 需要显示得比较好看，如果是循环小数就不好了
+                // 重新选数：保证 sum 是有限小数
+                // 1/2=0.5, 1/4=0.25, 1/8=0.125
+                // + 0.1 ... 0.9 都是有限的
+                let c_display = parseFloat(c.toFixed(4));
+                
+                let q = `${cf.f.toHTML()}x ${op('+')} ${dec}x = ${c_display}`;
+                return {q: q, a: `x=${x}`};
+            },
+            // 6. 先算后解 (4 * 3.5 - 2x = 10.2)
+            () => {
+                let x = randInt(2, 10);
+                let m = randInt(2, 5); // x的系数
+                let n1 = randInt(2, 9);
+                let n2 = randInt(11, 99)/10; // 3.5
+                let prod = parseFloat((n1 * n2).toFixed(2));
+                
+                // Eq: prod - mx = res
+                let res = parseFloat((prod - m * x).toFixed(2));
+                
+                // 防止 res < 0
+                if (res < 0) {
+                   // 换成 mx - prod = res
+                   res = parseFloat((m*x - prod).toFixed(2));
+                   let q = `${m}x ${op('-')} ${n1} ${op('×')} ${n2} = ${res}`;
+                   return {q: q, a: `x=${x}`};
+                }
+                
+                let q = `${n1} ${op('×')} ${n2} ${op('-')} ${m}x = ${res}`;
+                return {q: q, a: `x=${x}`};
+            }
+        ];
+
+        types.forEach((t, i) => {
+            let r = t();
+            html += createItem(i+1, r.q, r.a, false, false);
+        });
+        document.getElementById('section-4').innerHTML = html;
+    }
+
+    function generatePaper() {
+        let s = {
+            mul: document.getElementById('chk-mul').checked,
+            div: document.getElementById('chk-div').checked,
+            per: document.getElementById('chk-per').checked,
+            diff: document.querySelector('input[name="difficulty"]:checked').value
+        };
+        genSec1(s); genSec2(s); genSec3(); genSec4(s);
+    }
+    
+    function toggleAnswers() {
+        document.getElementById('paper-content').classList.toggle('show-answer');
+    }
+
+    window.onload = generatePaper;
+</script>
+</body>
+</html>
