@@ -68,7 +68,8 @@
 
 ## 📸 截图示例
 
-*(建议在此处放一张生成的试卷截图)*
+<img width="789" height="1119" alt="截屏2026-01-16 00 40 21" src="https://github.com/user-attachments/assets/62789662-46f9-4d24-8af1-ef2d5fe6af69" />
+
 
 ## 🤝 贡献与反馈
 
