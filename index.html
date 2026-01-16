@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>六年级数学计算专项-六大方程模型版</title>
+    <title>六年级数学计算专项-移动端适配版</title>
     <style>
         :root {
             --primary-color: #4a90e2;
@@ -18,7 +18,7 @@
             display: flex; height: 100vh; overflow: hidden;
         }
 
-        /* 左侧控制栏 */
+        /* --- 左侧控制栏 --- */
         .sidebar {
             width: 280px; background: #fff; padding: 20px;
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
@@ -35,17 +35,18 @@
         .btn-warning { background: #f1c40f; color: #333; }
         .btn-success { background: #2ecc71; }
 
-        /* 右侧预览区 */
+        /* --- 右侧预览区 --- */
         .preview-area {
             flex: 1; padding: 20px; overflow: auto;
             display: flex; justify-content: center;
         }
 
-        /* A4 纸张 */
+        /* --- A4 纸张 (PC默认) --- */
         .paper {
-            width: var(--paper-width); height: var(--paper-height);
+            width: var(--paper-width); min-height: var(--paper-height); /* 改为min-height防止内容溢出 */
             background: white; padding: 15mm;
             box-sizing: border-box; position: relative;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
         }
 
         .paper-header { text-align: center; margin-bottom: 10px; }
@@ -60,61 +61,117 @@
             font-family: "SimHei", sans-serif;
         }
 
-        /* 布局网格 */
+        /* --- 布局网格 (PC默认) --- */
         .grid-2-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; row-gap: 15px; }
         .grid-3-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; row-gap: 20px; }
         .grid-units { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; row-gap: 15px; }
-        /* 修改解方程为2列布局，因为题目变长了 */
         .grid-equations { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; row-gap: 25px; }
 
-        /* 题目容器 */
+        /* --- 题目元素 --- */
         .question-item {
-            display: flex;
-            align-items: flex-start;
-            font-size: 16px;
-            padding: 5px 0;
+            display: flex; align-items: flex-start;
+            font-size: 16px; padding: 5px 0;
         }
         .question-item.tall { min-height: 60px; }
-
         .q-index {
-            width: 35px; margin-top: 4px; 
-            font-weight: bold; flex-shrink: 0;
+            width: 35px; margin-top: 4px; font-weight: bold; flex-shrink: 0;
             font-family: "Times New Roman", serif;
         }
+        .q-content { flex: 1; line-height: 2; word-wrap: break-word; } /* 防止长公式溢出 */
 
-        .q-content {
-            flex: 1;
-            line-height: 2;
-        }
-
-        /* 分数与符号样式 */
+        /* 分数与符号 */
         .fraction {
-            display: inline-block;
-            vertical-align: middle;
-            text-align: center;
-            margin: 0 3px;
-            font-family: "Times New Roman", serif;
+            display: inline-block; vertical-align: middle; text-align: center;
+            margin: 0 3px; font-family: "Times New Roman", serif;
         }
-        .fraction > span {
-            display: block; padding: 0 3px; line-height: 1;
-        }
+        .fraction > span { display: block; padding: 0 3px; line-height: 1; }
         .fraction .top { border-bottom: 1px solid #000; }
         .fraction .bottom { padding-top: 1px; }
+        .operator { margin: 0 4px; vertical-align: middle; font-family: "Times New Roman", serif; }
 
-        .operator {
-            margin: 0 4px; vertical-align: middle; font-family: "Times New Roman", serif;
-        }
-
-        /* 答案显隐控制 */
         .answer-key { color: red; font-weight: bold; display: none; margin-left: 10px; }
         .show-answer .answer-key { display: inline; }
 
+        /* ========================================= */
+        /* 移动端适配 (Media Queries)      */
+        /* ========================================= */
+        @media screen and (max-width: 768px) {
+            body {
+                flex-direction: column; /* 上下布局 */
+                height: auto; /* 允许滚动 */
+                overflow-y: auto;
+            }
+
+            .sidebar {
+                width: 100%; /* 宽度占满 */
+                box-sizing: border-box;
+                height: auto; /* 高度自适应 */
+                padding: 15px;
+                flex-shrink: 0; /* 防止被压缩 */
+                border-bottom: 1px solid #ddd;
+            }
+            
+            /* 调整按钮布局，每行2个 */
+            .sidebar .btn {
+                display: inline-block;
+                width: 48%;
+                margin-right: 2%;
+                margin-bottom: 10px;
+            }
+            .sidebar .btn:last-child { margin-right: 0; }
+
+            .preview-area {
+                padding: 10px;
+                display: block; /* 取消flex居中，让纸张自然流式 */
+            }
+
+            .paper {
+                width: 100%; /* 纸张占满屏幕 */
+                height: auto; /* 高度自适应 */
+                padding: 10px; /* 减小内边距 */
+                box-shadow: none; /* 移动端去掉阴影显得更干净 */
+            }
+
+            .paper-title { font-size: 20px; } /* 标题稍微调小 */
+            
+            .student-info {
+                flex-wrap: wrap; /* 信息栏换行 */
+                gap: 10px;
+            }
+            .student-info span { width: 45%; } /* 两列排布 */
+
+            /* --- 网格降维 (关键修改) --- */
+            /* 口算题：4列 -> 2列 */
+            .grid-2-4 { grid-template-columns: 1fr 1fr; gap: 5px; }
+            
+            /* 脱式计算：2列 -> 1列 (防止太挤) */
+            .grid-3-2 { grid-template-columns: 1fr; gap: 15px; }
+            
+            /* 单位换算：2列 -> 1列 */
+            .grid-units { grid-template-columns: 1fr; gap: 10px; }
+            
+            /* 解方程：2列 -> 1列 */
+            .grid-equations { grid-template-columns: 1fr; gap: 15px; }
+            
+            /* 增加一点字号利于点击 */
+            .question-item { font-size: 17px; }
+        }
+
+        /* ========================================= */
+        /* 打印样式 (保持A4)           */
+        /* ========================================= */
         @media print {
             .sidebar { display: none; }
             .preview-area { padding: 0; background: white; display: block; }
-            .paper { width: 100%; height: auto; box-shadow: none; padding: 0 10mm; }
+            .paper { width: 100%; max-width: 100%; height: auto; box-shadow: none; padding: 0 10mm; margin: 0; }
             body { height: auto; overflow: visible; background: white; }
             @page { size: A4; margin: 10mm; }
+            
+            /* 打印时强制恢复多列布局，即使是在手机上点击打印 */
+            .grid-2-4 { grid-template-columns: repeat(4, 1fr); }
+            .grid-3-2 { grid-template-columns: 1fr 1fr; }
+            .grid-units { grid-template-columns: 1fr 1fr; }
+            .grid-equations { grid-template-columns: 1fr 1fr; }
         }
     </style>
 </head>
@@ -122,18 +179,20 @@
 
 <div class="sidebar">
     <h2>出题设置</h2>
-    <div style="margin-bottom:15px">
-        <label><input type="checkbox" id="chk-mul" checked> 分数乘法</label><br>
-        <label><input type="checkbox" id="chk-div" checked> 分数除法</label><br>
+    <div style="margin-bottom:15px; display:flex; flex-wrap:wrap; gap:10px;">
+        <label><input type="checkbox" id="chk-mul" checked> 分数乘法</label>
+        <label><input type="checkbox" id="chk-div" checked> 分数除法</label>
         <label><input type="checkbox" id="chk-per" checked> 百分数</label>
     </div>
     <div style="margin-bottom:15px">
-        <label><input type="radio" name="difficulty" value="basic" checked> 基础模式</label><br>
+        <label style="margin-right:15px"><input type="radio" name="difficulty" value="basic" checked> 基础模式</label>
         <label><input type="radio" name="difficulty" value="advanced"> 提高模式</label>
     </div>
-    <button class="btn btn-primary" onclick="generatePaper()">🔄 刷新题目</button>
-    <button class="btn btn-warning" onclick="toggleAnswers()">👁️ 显示答案</button>
-    <button class="btn btn-success" onclick="window.print()">📄 打印 / 下载PDF</button>
+    <div style="width:100%">
+        <button class="btn btn-primary" onclick="generatePaper()">🔄 刷新题目</button>
+        <button class="btn btn-warning" onclick="toggleAnswers()">👁️ 显示答案</button>
+        <button class="btn btn-success" onclick="window.print()">📄 打印 / 下载</button>
+    </div>
 </div>
 
 <div class="preview-area">
@@ -330,143 +389,74 @@
         const types = [
             // 1. 同类项合并 (x - 40%x = 120)
             () => {
-                let x = randInt(5, 50) * 10; // 答案
-                let per = randInt(1, 9) * 10; // 10% - 90%
+                let x = randInt(5, 50) * 10; 
+                let per = randInt(1, 9) * 10; 
                 let type = Math.random() > 0.5 ? 'sub' : 'add';
-                // 构造方程: (1 +/- per%)x = res
                 let factor = type === 'sub' ? (100 - per)/100 : (100 + per)/100;
                 let res = Math.round(x * factor);
-                let q = type === 'sub' 
-                    ? `x ${op('-')} ${per}%x = ${res}`
-                    : `x ${op('+')} ${per}%x = ${res}`;
+                let q = type === 'sub' ? `x ${op('-')} ${per}%x = ${res}` : `x ${op('+')} ${per}%x = ${res}`;
                 return {q: q, a: `x=${x}`};
             },
-            // 2. 解比例 (10:x = 2/3 : 4/5)
+            // 2. 解比例
             () => {
-                let x = randInt(2, 20); // 答案
-                // 构造: a : x = b : c  => x = a*c/b
-                // 选取两个简单的分数作为 b 和 c
-                let f1 = getStrictFraction(); // b
-                let f2 = getStrictFraction(); // c
-                // 倒推 a. a = x * b / c
-                // 为了让a看起来正常，我们稍微凑一下
-                // 策略改为：外项积 = 内项积
-                // a * c = x * b. 让 b, c 为简单分数.
-                // 形式： x : 整数 = 分数 : 分数
-                let n = randInt(2, 12); // 整数项
-                let q = `x ${op(':')} ${n} = ${f1.toHTML()} ${op(':')} ${f2.toHTML()}`;
-                // x = n * f1 / f2
-                let val = n * (f1.n * f2.d) / (f1.d * f2.n);
-                // 如果结果不是有限小数或整数，重来
-                // 简单起见，直接给一个凑好的整数比例
+                let x_ans, q;
                 let k = randInt(2, 8);
-                x = randInt(2, 10) * k;
-                let n2 = randInt(2, 10);
-                let n3 = n2 * k;
-                // x : n2 = n3 : 1  -> x/n2 = n3
-                // 稍微变形: x : 2.4 = 5 : 2
+                x_ans = randInt(2, 10) * k;
                 let ratio = randInt(2, 5); 
-                let d2 = randInt(1, 9)/10 + randInt(1,5); // 小数
+                let d2 = randInt(1, 9)/10 + randInt(1,5);
                 let d1 = parseFloat((d2 * ratio).toFixed(1)); 
                 let d3 = randInt(2, 9);
-                let x_ans = parseFloat((d3 * ratio).toFixed(1));
+                x_ans = parseFloat((d3 * ratio).toFixed(1));
                 q = `x ${op(':')} ${d3} = ${d1} ${op(':')} ${d2}`;
                 return {q: q, a: `x=${x_ans}`};
             },
-            // 3. 去括号 (3(x+1) = 2x+5)
+            // 3. 去括号
             () => {
                 let x = randInt(2, 15);
-                let a = randInt(2, 6); // 括号外系数
-                let b = randInt(1, 10); // 括号内常数
-                // 左边 = a(x+b)
+                let a = randInt(2, 6); 
+                let b = randInt(1, 10); 
                 let lhs_val = a * (x + b);
-                // 右边构造 cx + d
-                let c = randInt(1, a - 1); // 确保有解且x系数为正
+                let c = randInt(1, a - 1); 
                 let d = lhs_val - c * x;
                 let q = `${a}(x ${op('+')} ${b}) = ${c}x ${op('+')} ${d}`;
                 return {q: q, a: `x=${x}`};
             },
-            // 4. 去分母 (x/2 - 1 = (x+2)/6 + 2)
+            // 4. 去分母
             () => {
-                // 模板: (x+a)/d1 = (x+b)/d2 + k
-                let x = randInt(1, 10) * 6; // 保证公倍数
+                let x = randInt(1, 10) * 6; 
                 let d1 = 2, d2 = 3; 
                 if(Math.random()>0.5) { d1=3; d2=4; x=12*randInt(1,3); }
                 else if(Math.random()>0.5) { d1=2; d2=5; x=10*randInt(1,3); }
-                
-                let a = 0; // 简化
                 let b = randInt(1, 5);
-                
-                // 计算 k
-                // LHS = x/d1
-                // RHS_part = (x+b)/d2
-                let lhs = x / d1;
-                let rhs_part = (x + b) / d2;
-                let k = lhs - rhs_part;
-                
-                // 凑整 k
-                // 如果 k 不是整数，重新选 b
-                // 这种方式比较笨，我们直接反推: 
-                // x/2 - (x+b)/3 = k
-                // 3x - 2(x+b) = 6k
-                // 3x - 2x - 2b = 6k => x - 2b = 6k
-                // 所以 6k = x - 2b. 
-                // 只要 (x - 2b) 能被 6 整除即可
-                // 令 b=0, x=6, k=1. 6/2 - 6/3 = 3-2=1.
-                
-                // 生成逻辑：
-                let lcm = d1 * d2; // 简化公倍数
                 let k_int = randInt(1, 3);
-                b = randInt(1, 5);
-                // 方程: x/d1 - (x+b)/d2 = k
-                // x*d2 - (x+b)*d1 = k * d1*d2
-                // x(d2-d1) - b*d1 = k*lcm
-                // x = (k*lcm + b*d1) / (d2-d1)
-                
-                // 设 d1=2, d2=3. x = (6k + 2b)
-                x = 6*k_int + 2*b;
-                
+                x = 6*k_int + 2*b; // 简化逻辑保证整数解
                 let q = `<div class="fraction"><span class="top">x</span><span class="bottom">${d1}</span></div> ${op('-')} <div class="fraction"><span class="top">x+${b}</span><span class="bottom">${d2}</span></div> = ${k_int}`;
                 return {q: q, a: `x=${x}`};
             },
-            // 5. 三数混合 (1/8x + 0.75x = ...)
+            // 5. 三数混合
             () => {
-                let x = randInt(1, 20); // 答案
-                // 构造: a(分数)x + b(小数)x = c
-                let cf = commonFracs[randInt(0, 3)]; // 1/2, 1/4, 3/4 等简单分数
-                let dec = randInt(1, 9) / 10; // 0.x
-                
+                let x = randInt(1, 20); 
+                let cf = commonFracs[randInt(0, 3)]; 
+                let dec = randInt(1, 9) / 10; 
                 let sum = cf.f.getValue() + dec; 
-                // 结果 c
                 let c = sum * x;
-                // c 需要显示得比较好看，如果是循环小数就不好了
-                // 重新选数：保证 sum 是有限小数
-                // 1/2=0.5, 1/4=0.25, 1/8=0.125
-                // + 0.1 ... 0.9 都是有限的
                 let c_display = parseFloat(c.toFixed(4));
-                
                 let q = `${cf.f.toHTML()}x ${op('+')} ${dec}x = ${c_display}`;
                 return {q: q, a: `x=${x}`};
             },
-            // 6. 先算后解 (4 * 3.5 - 2x = 10.2)
+            // 6. 先算后解
             () => {
                 let x = randInt(2, 10);
-                let m = randInt(2, 5); // x的系数
+                let m = randInt(2, 5); 
                 let n1 = randInt(2, 9);
-                let n2 = randInt(11, 99)/10; // 3.5
+                let n2 = randInt(11, 99)/10; 
                 let prod = parseFloat((n1 * n2).toFixed(2));
-                
-                // Eq: prod - mx = res
                 let res = parseFloat((prod - m * x).toFixed(2));
-                
-                // 防止 res < 0
                 if (res < 0) {
-                   // 换成 mx - prod = res
                    res = parseFloat((m*x - prod).toFixed(2));
                    let q = `${m}x ${op('-')} ${n1} ${op('×')} ${n2} = ${res}`;
                    return {q: q, a: `x=${x}`};
                 }
-                
                 let q = `${n1} ${op('×')} ${n2} ${op('-')} ${m}x = ${res}`;
                 return {q: q, a: `x=${x}`};
             }
